@@ -1,10 +1,6 @@
 [package]
-name = "hello-world"
+name = "hello_cargo"
 version = "0.1.0"
 authors = ["Martin Fracker, Jr. <martin.frackerjr@gmail.com>"]
 
 [dependencies]
-
-[[bin]]
-name = "hello-world"
-path = "main.rs"
