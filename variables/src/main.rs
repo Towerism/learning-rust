@@ -4,4 +4,8 @@ fn main() {
 
     x = 6;
     println!("The value of x is: {}", x);
+
+    let y = 1;
+    let y = y + 1;
+    println!("The value of x is: {}", y);
 }
