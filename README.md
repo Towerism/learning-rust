@@ -4,7 +4,7 @@
 ## About this repository
 
 You don't need anything to read the code in this repo, OBVIOUSLY. But if you
-want to compile and build them, you will want to install the Rust toolchain. Go
+want to compile and run them, you will want to install the Rust toolchain. Go
 [here](https://www.rust-lang.org/en-US/install.html) for more information about
 that.
 
