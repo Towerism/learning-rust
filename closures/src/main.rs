@@ -2,29 +2,34 @@ use std::thread;
 use std::time::Duration;
 use std::collections::HashMap;
 
-struct Cacher<T>
-    where T: Fn(u32) -> u32
+struct Cacher<T, V>
+    where V: std::hash::Hash + std::cmp::Eq,
+          T: Fn(&V) -> V
 {
     calculation: T,
-    cache: HashMap<u32, u32>
+    cache: HashMap<V, V>
 }
 
-impl<T> Cacher<T>
-    where T: Fn(u32) -> u32
+impl<T, V> Cacher<T, V>
+    where T: Fn(&V) -> V,
+          V: std::hash::Hash + std::cmp::Eq
 {
-    fn new(calculation: T) -> Cacher<T> {
+    fn new(calculation: T) -> Cacher<T, V> {
         Cacher {
             calculation,
             cache: HashMap::new()
         }
     }
 
-    fn value(&mut self, arg: u32) -> u32 {
-        if !self.cache.contains_key(&arg) {
-            let v = (self.calculation)(arg);
-            self.cache.insert(arg, v);
+    fn value(&mut self, arg: V) -> &V {
+        let ref result;
+        if self.cache.contains_key(&arg) {
+            result = self.cache.get(&arg).unwrap();
+        } else {
+            let v = (self.calculation)(&arg);
+            result = self.cache.entry(arg).or_insert(v);
         }
-        self.cache[&arg]
+        result
     }
 }
 
@@ -39,10 +44,10 @@ fn main() {
 }
 
 fn generate_workout(intensity: u32, random_number: u32) {
-    let mut expensive_closure = Cacher::new(|num| {
+    let mut expensive_closure = Cacher::new(|num: &u32| {
         println!("calculating slowly...");
         thread::sleep(Duration::from_secs(2));
-        num
+        num.clone()
     });
 
     if intensity < 25 {
@@ -68,10 +73,19 @@ fn generate_workout(intensity: u32, random_number: u32) {
 
 #[test]
 fn call_with_different_values() {
-    let mut c = Cacher::new(|a| a);
+    let mut c = Cacher::new(|a: &u32| a.clone());
 
-    let _v1 = c.value(1);
-    let v2 = c.value(2);
+    let _v1 = *c.value(1);
+    let v2 = *c.value(2);
 
     assert_eq!(v2, 2);
+}
+
+#[test]
+fn call_with_different_cacher_type() {
+    let mut c = Cacher::new(|a: &String| a.clone());
+
+    let v = c.value(String::from("asdf"));
+
+    assert_eq!(*v, String::from("asdf"));
 }
